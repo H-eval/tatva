@@ -1,0 +1,183 @@
+<!-- <section id="upload" className="py-12">
+  {/* Hidden inputs (separate) */}
+  <input
+    type="file"
+    accept=".xml,.json,.txt"
+    hidden
+    id="reference-input"
+    onChange={handleReferenceUpload}
+  />
+
+  <input
+    type="file"
+    accept=".xml,.json,.txt"
+    hidden
+    id="english-input"
+    onChange={handleEnglishUpload}
+  />
+
+  <input
+    type="file"
+    accept=".xml,.json,.txt"
+    multiple
+    hidden
+    id="translation-input"
+    onChange={handleTranslationUpload}
+  />
+
+  <div className="max-w-4xl mx-auto px-6">
+    <div className="text-center mb-8">
+      <h2 className="text-3xl font-bold mb-2 text-white">
+        {title}
+      </h2>
+      <p className="text-lg text-gray-600">
+        Upload 1 English file and multiple translation files
+      </p>
+    </div>
+
+    {/* 3 Column Upload Layout */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+ 
+
+      {/* Column 2 – English File */}
+      <div
+        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-emerald-500 transition"
+        onClick={() => document.getElementById("english-input").click()}
+        role="button"
+        aria-label="Upload English file"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ")
+            document.getElementById("english-input").click();
+        }}
+      >
+        <div className="space-y-4">
+          <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center mx-auto text-lg">
+            🇬🇧
+          </div>
+          <h3 className="text-lg font-semibold text-white">English File</h3>
+
+          {englishFile ? (
+            <div className="mt-4 text-sm text-green-400">
+              <p>{englishFile.name}</p>
+              <p>{(englishFile.size / 1024).toFixed(1)} KB</p>
+              <p className="text-gray-400 mt-1">Click to replace</p>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm mt-2">Required (_En.xml)</p>
+          )}
+
+          {errors.english && (
+            <p id="english-error" className="text-red-400 mt-2 text-sm">
+              {errors.english}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Column 3 – Translation Files */}
+      <div
+        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-purple-500 transition"
+        onClick={() => document.getElementById("translation-input").click()}
+        role="button"
+        aria-label="Upload translation files"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ")
+            document.getElementById("translation-input").click();
+        }}
+      >
+        <div className="space-y-4">
+          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto text-lg">
+            🌍
+          </div>
+          <h3 className="text-lg font-semibold text-white">Translation Files</h3>
+
+          {translationFiles.length > 0 ? (
+            <div className="mt-4 text-sm text-green-400">
+              {translationFiles.map((file, index) => (
+                <p key={index}>
+                  {file.name} — {(file.size / 1024).toFixed(1)} KB
+                </p>
+              ))}
+              <p className="text-gray-400 mt-1">Click to replace files</p>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm mt-2">Multiple (_Hi_*.xml)</p>
+          )}
+
+          {errors.translation && (
+            <p id="translation-error" className="text-red-400 mt-2 text-sm">
+              {errors.translation}
+            </p>
+          )}
+        </div>
+      </div>
+
+            {/* Column 1 – Reference File */}
+      <div
+        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-indigo-500 transition"
+        onClick={() => document.getElementById("reference-input").click()}
+        role="button"
+        aria-label="Upload reference file"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ")
+            document.getElementById("reference-input").click();
+        }}
+      >
+        <div className="space-y-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mx-auto text-lg">
+            📄
+          </div>
+          <h3 className="text-lg font-semibold text-white">
+            Reference File
+          </h3>
+
+          {referenceFile ? (
+            <div className="mt-4 text-sm text-green-400">
+              <p>{referenceFile.name}</p>
+              <p>{(referenceFile.size / 1024).toFixed(1)} KB</p>
+              <p className="text-gray-400 mt-1">Click to replace</p>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm mt-2">Upload xml / json / txt</p>
+          )}
+
+          {errors.reference && (
+            <p id="reference-error" className="text-red-400 mt-2 text-sm">
+              {errors.reference}
+            </p>
+          )}
+        </div>
+      </div>
+
+    </div>
+
+    {/* Selected File Count */}
+    {((referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length) > 0 && (
+      <p className="text-center text-green-400 mt-6">
+        {(referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length} file(s) selected
+      </p>
+    )}
+
+    {/* Submit Button */}
+    <div className="text-center mt-6">
+      <button
+        type="button"
+        onClick={handleUploadClick}
+        className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500"
+        disabled={uploading}
+      >
+        {uploading ? "Uploading..." : "Upload & Continue"}
+      </button>
+    </div>
+
+    {uploadVisible && (
+      <p className="text-center text-green-400 mt-4">
+        Upload successful! Redirecting...
+      </p>
+    )}
+  </div>
+</section> -->

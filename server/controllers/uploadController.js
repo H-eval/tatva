@@ -9,6 +9,43 @@ const parseFile = require("../utils/fileParser");
 const runAutoEvaluation = require("../scripts/autoEvaluation");
 const Reference = require("../models/Reference");
 
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function normaliseId(id) {
+  return String(id).replace(/[^0-9]/g, "").trim();
+}
+
+function sortBySID(arr) {
+  return [...arr].sort(
+    (a, b) => Number(normaliseId(a.S_ID)) - Number(normaliseId(b.S_ID))
+  );
+}
+
+function checkAlignment(base, other, label) {
+  if (base.length !== other.length) {
+    return {
+      aligned: false,
+      reason: `${label} has ${other.length} sentences but base has ${base.length}`,
+    };
+  }
+
+  const sortedBase = sortBySID(base);
+  const sortedOther = sortBySID(other);
+
+  for (let i = 0; i < sortedBase.length; i++) {
+    if (normaliseId(sortedBase[i].S_ID) !== normaliseId(sortedOther[i].S_ID)) {
+      return {
+        aligned: false,
+        reason: `${label}: S_ID mismatch at position ${i + 1}`,
+      };
+    }
+  }
+
+  return { aligned: true, reason: "" };
+}
+
+// ─── controller ─────────────────────────────────────────────────────────────
+
 const uploadFiles = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -26,40 +63,53 @@ const uploadFiles = async (req, res) => {
 
     const batchId = uuidv4();
 
-    // ✅ Parse Reference
+    // ── Parse ──────────────────────────────────────────────────────────────
     const referenceSentences = await parseFile(referenceFile.path);
-
-    if (!referenceSentences.length) {
+    if (!referenceSentences.length)
       throw new Error("Reference file contains no sentences");
-    }
 
-    // ✅ Parse English
     const englishSentences = await parseFile(englishFile.path);
-
-    if (!englishSentences.length) {
+    if (!englishSentences.length)
       throw new Error("English file contains no sentences");
+
+    // ── MATCH COMMON S_IDs (OPTION 3) ──────────────────────────────────────
+    const refMap = new Map(
+      referenceSentences.map((s) => [normaliseId(s.S_ID), s])
+    );
+
+    const engMap = new Map(
+      englishSentences.map((s) => [normaliseId(s.S_ID), s])
+    );
+
+    const commonIds = [...refMap.keys()].filter((id) => engMap.has(id));
+
+    if (commonIds.length === 0) {
+      throw new Error("No common S_IDs found between Reference and English");
     }
 
-    // ✅ Alignment check (Reference vs English)
-    if (
-      referenceSentences.length !== englishSentences.length ||
-      !referenceSentences.every(
-        (s, index) => s.S_ID === englishSentences[index].S_ID
-      )
-    ) {
-      throw new Error("Reference and English files are structurally misaligned");
+    if (commonIds.length < referenceSentences.length || commonIds.length < englishSentences.length) {
+      console.warn(
+        `⚠️  Skipping unmatched sentences: Reference=${referenceSentences.length}, English=${englishSentences.length}, Used=${commonIds.length}`
+      );
     }
-    
-    const referenceDocs = referenceSentences.map((s) => ({
+
+    const filteredRef = commonIds.map((id) => refMap.get(id));
+    const filteredEng = commonIds.map((id) => engMap.get(id));
+
+    const sortedRef = sortBySID(filteredRef);
+    const sortedEng = sortBySID(filteredEng);
+
+    // ── Insert Reference ──────────────────────────────────────────────────
+    const referenceDocs = sortedRef.map((s) => ({
       batchId,
       S_ID: s.S_ID,
-      ReferenceSentence: s.text
+      ReferenceSentence: s.text,
     }));
 
     await Reference.insertMany(referenceDocs, { session });
 
-    // Insert English sentences
-    const sentenceDocs = englishSentences.map((s) => ({
+    // ── Insert English ────────────────────────────────────────────────────
+    const sentenceDocs = sortedEng.map((s) => ({
       batchId,
       S_ID: s.S_ID,
       SourceSentence: s.text,
@@ -67,18 +117,21 @@ const uploadFiles = async (req, res) => {
 
     await Sentence.insertMany(sentenceDocs, { session });
 
+    // ── Process translations ──────────────────────────────────────────────
     let translatorCounter = 0;
 
     for (const file of translationFiles) {
       const translatedSentences = await parseFile(file.path);
 
-      if (
-        translatedSentences.length !== englishSentences.length ||
-        !translatedSentences.every(
-          (s, index) => s.S_ID === englishSentences[index].S_ID
-        )
-      ) {
-        console.warn(`Skipping ${file.originalname}: structural mismatch`);
+      // Match only common S_IDs with English
+      const transMap = new Map(
+        translatedSentences.map((s) => [normaliseId(s.S_ID), s])
+      );
+
+      const validIds = commonIds.filter((id) => transMap.has(id));
+
+      if (validIds.length === 0) {
+        console.warn(`⚠️  Skipping "${file.originalname}" — no matching S_IDs`);
         continue;
       }
 
@@ -86,11 +139,13 @@ const uploadFiles = async (req, res) => {
       const T_ID = `T${translatorCounter}`;
 
       await Translator.create(
-        [{ T_ID, TName: `Translator ${translatorCounter}` }],
+        [{ T_ID, TName: file.originalname.replace(/\.[^/.]+$/, "") }],
         { session }
       );
 
-      const translationDocs = translatedSentences.map((s) => ({
+      const sortedTrans = sortBySID(validIds.map((id) => transMap.get(id)));
+
+      const translationDocs = sortedTrans.map((s) => ({
         batchId,
         S_ID: s.S_ID,
         T_ID,
@@ -101,31 +156,35 @@ const uploadFiles = async (req, res) => {
       await Translation.insertMany(translationDocs, { session });
     }
 
+    if (translatorCounter === 0) {
+      throw new Error(
+        "No translation files could be processed — all were misaligned"
+      );
+    }
+
     await session.commitTransaction();
     session.endSession();
 
+    // ── Auto evaluation ───────────────────────────────────────────────────
     setImmediate(() => {
       runAutoEvaluation(batchId)
         .then(() => console.log("✅ Auto evaluation completed"))
-        .catch((err) =>
-          console.error("❌ Auto evaluation failed:", err)
-      );
+        .catch((err) => console.error("❌ Auto evaluation failed:", err));
     });
 
-    // ✅ Cleanup all files
+    // ── Cleanup ───────────────────────────────────────────────────────────
     try {
       fs.unlinkSync(referenceFile.path);
       fs.unlinkSync(englishFile.path);
-      translationFiles.forEach((file) =>
-        fs.unlinkSync(file.path)
-      );
+      translationFiles.forEach((f) => fs.unlinkSync(f.path));
     } catch (err) {
-      console.warn("File cleanup failed:", err.message);
+      console.warn("⚠️  File cleanup warning:", err.message);
     }
 
     res.json({
       message: "Upload parsed successfully",
       batchId,
+      matchedSentences: commonIds.length,
       translatorsProcessed: translatorCounter,
     });
 

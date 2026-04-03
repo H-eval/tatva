@@ -352,189 +352,249 @@ async function handleUploadClick() {
 </section>
 
     {/* ================= UPLOAD SECTION ================= */}
-<section id="upload" className="py-12">
-  {/* Hidden inputs (separate) */}
-  <input
-    type="file"
-    accept=".xml,.json,.txt"
-    hidden
-    id="reference-input"
-    onChange={handleReferenceUpload}
-  />
+{/* ================= UPLOAD SECTION ================= */}
+<section id="upload" className="py-20">
+  <input type="file" accept=".xml,.json,.txt" hidden id="reference-input" onChange={handleReferenceUpload} />
+  <input type="file" accept=".xml,.json,.txt" hidden id="english-input" onChange={handleEnglishUpload} />
+  <input type="file" accept=".xml,.json,.txt" multiple hidden id="translation-input" onChange={handleTranslationUpload} />
 
-  <input
-    type="file"
-    accept=".xml,.json,.txt"
-    hidden
-    id="english-input"
-    onChange={handleEnglishUpload}
-  />
+  <div className="max-w-5xl mx-auto px-6">
 
-  <input
-    type="file"
-    accept=".xml,.json,.txt"
-    multiple
-    hidden
-    id="translation-input"
-    onChange={handleTranslationUpload}
-  />
-
-  <div className="max-w-4xl mx-auto px-6">
-    <div className="text-center mb-8">
-      <h2 className="text-3xl font-bold mb-2 text-white">
-        {title}
-      </h2>
-      <p className="text-lg text-gray-600">
-        Upload 1 English file and multiple translation files
+    <div className="text-center mb-14">
+      <p className="text-xs uppercase tracking-[0.3em] text-indigo-400 mb-3 font-medium">Step 1</p>
+      <h2 className="text-4xl font-bold text-white mb-3">Upload your data</h2>
+      <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+        Provide your source, translations, and reference files to begin human evaluation
       </p>
     </div>
 
-    {/* 3 Column Upload Layout */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="group grid grid-cols-1 md:grid-cols-3 gap-5">
 
- 
-
-      {/* Column 2 – English File */}
+      {/* === Card 1: English === */}
       <div
-        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-emerald-500 transition"
         onClick={() => document.getElementById("english-input").click()}
-        role="button"
-        aria-label="Upload English file"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ")
-            document.getElementById("english-input").click();
+        className="relative flex flex-col p-6 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 ease-out hover:scale-[1.03] group-hover:[&:not(:hover)]:blur-[2px] group-hover:[&:not(:hover)]:opacity-60"
+        style={{
+          background: englishFile ? "linear-gradient(135deg, #0f1a15 0%, #111a14 100%)" : "linear-gradient(135deg, #141414 0%, #161a16 100%)",
+          border: englishFile ? "1px solid rgba(52,211,153,0.45)" : "1px solid rgba(52,211,153,0.18)",
+          boxShadow: englishFile ? "0 0 28px rgba(52,211,153,0.1), inset 0 1px 0 rgba(52,211,153,0.08)" : "0 2px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        <div className="space-y-4">
-          <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center mx-auto text-lg">
-            🇬🇧
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:"2px", background:"linear-gradient(90deg, transparent, rgba(52,211,153,0.7), transparent)" }} />
+
+        <div className="flex items-center justify-between mb-5">
+          <div style={{ width:44, height:44, borderRadius:12, background:"rgba(52,211,153,0.12)", border:"1px solid rgba(52,211,153,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgb(52,211,153)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+            </svg>
           </div>
-          <h3 className="text-lg font-semibold text-white">English File</h3>
+          <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.15em", color:"rgba(255,255,255,0.18)" }}>01</span>
+        </div>
 
-          {englishFile ? (
-            <div className="mt-4 text-sm text-green-400">
-              <p>{englishFile.name}</p>
-              <p>{(englishFile.size / 1024).toFixed(1)} KB</p>
-              <p className="text-gray-400 mt-1">Click to replace</p>
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm mt-2">Required (_En.xml)</p>
-          )}
+        <p style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>English source</p>
+        <p style={{ fontSize:12, color:"rgba(255,255,255,0.35)", marginBottom:20, lineHeight:1.6, minHeight:36 }}>
+          {englishFile
+            ? <span style={{ color:"rgba(52,211,153,0.85)" }}>✓ {englishFile.name} · {(englishFile.size/1024).toFixed(1)} KB</span>
+            : "Upload your _En.xml source file"
+          }
+        </p>
 
-          {errors.english && (
-            <p id="english-error" className="text-red-400 mt-2 text-sm">
-              {errors.english}
-            </p>
-          )}
+        <div className="mt-auto mb-1">
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); document.getElementById("english-input").click(); }}
+            style={{ position:"relative", width:"100%", height:46, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid rgba(52,211,153,0.55)", boxShadow:"4px 4px 0px rgba(52,211,153,0.3)", backgroundColor:"rgba(52,211,153,0.1)", borderRadius:10, overflow:"hidden", transition:"all 0.3s" }}
+            onMouseEnter={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "transparent";
+              e.currentTarget.querySelector(".uv-icon").style.width = "100%";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(0)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "#fff";
+              e.currentTarget.querySelector(".uv-icon").style.width = "46px";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(calc(100% + 200px))";
+            }}
+            onMouseDown={e => { e.currentTarget.style.transform = "translate(3px,3px)"; e.currentTarget.style.boxShadow = "0px 0px rgba(52,211,153,0.3)"; }}
+            onMouseUp={e => { e.currentTarget.style.transform = "translate(0,0)"; e.currentTarget.style.boxShadow = "4px 4px 0px rgba(52,211,153,0.3)"; }}
+          >
+            <span className="uv-text" style={{ color:"#fff", fontWeight:700, fontSize:13, transition:"color 0.3s", whiteSpace:"nowrap", letterSpacing:"0.06em", zIndex:1 }}>
+              BROWSE FILE
+            </span>
+            <span className="uv-icon" style={{ position:"absolute", right:0, transform:"translateX(calc(100% + 200px))", height:"100%", width:46, backgroundColor:"rgba(52,211,153,0.22)", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.3s" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="rgb(52,211,153)">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.07)", paddingTop:12, marginTop:14 }}>
+          <span style={{ fontSize:11, color: englishFile ? "rgba(52,211,153,0.8)" : "rgba(255,255,255,0.25)" }}>
+            {englishFile ? "1 file ready" : "No file selected"}
+          </span>
         </div>
       </div>
 
-      {/* Column 3 – Translation Files */}
+      {/* === Card 2: Translations === */}
       <div
-        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-purple-500 transition"
         onClick={() => document.getElementById("translation-input").click()}
-        role="button"
-        aria-label="Upload translation files"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ")
-            document.getElementById("translation-input").click();
+        className="relative flex flex-col p-6 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 ease-out hover:scale-[1.03] group-hover:[&:not(:hover)]:blur-[2px] group-hover:[&:not(:hover)]:opacity-60"
+        style={{
+          background: translationFiles.length > 0 ? "linear-gradient(135deg, #13101a 0%, #16111e 100%)" : "linear-gradient(135deg, #141414 0%, #17141a 100%)",
+          border: translationFiles.length > 0 ? "1px solid rgba(167,139,250,0.45)" : "1px solid rgba(167,139,250,0.18)",
+          boxShadow: translationFiles.length > 0 ? "0 0 28px rgba(167,139,250,0.1), inset 0 1px 0 rgba(167,139,250,0.08)" : "0 2px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        <div className="space-y-4">
-          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto text-lg">
-            🌍
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:"2px", background:"linear-gradient(90deg, transparent, rgba(167,139,250,0.7), transparent)" }} />
+
+        <div className="flex items-center justify-between mb-5">
+          <div style={{ width:44, height:44, borderRadius:12, background:"rgba(167,139,250,0.12)", border:"1px solid rgba(167,139,250,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgb(167,139,250)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/>
+              <path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/>
+            </svg>
           </div>
-          <h3 className="text-lg font-semibold text-white">Translation Files</h3>
+          <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.15em", color:"rgba(255,255,255,0.18)" }}>02</span>
+        </div>
 
-          {translationFiles.length > 0 ? (
-            <div className="mt-4 text-sm text-green-400">
-              {translationFiles.map((file, index) => (
-                <p key={index}>
-                  {file.name} — {(file.size / 1024).toFixed(1)} KB
-                </p>
-              ))}
-              <p className="text-gray-400 mt-1">Click to replace files</p>
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm mt-2">Multiple (_Hi_*.xml)</p>
-          )}
+        <p style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Translation files</p>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.35)", marginBottom:20, lineHeight:1.6, minHeight:36 }}>
+          {translationFiles.length > 0
+            ? translationFiles.map((f, i) => (
+                <div key={i} style={{ color:"rgba(167,139,250,0.85)" }}>✓ {f.name}</div>
+              ))
+            : "Upload one or more _Hi_*.xml files"
+          }
+        </div>
 
-          {errors.translation && (
-            <p id="translation-error" className="text-red-400 mt-2 text-sm">
-              {errors.translation}
-            </p>
-          )}
+        <div className="mt-auto mb-1">
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); document.getElementById("translation-input").click(); }}
+            style={{ position:"relative", width:"100%", height:46, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid rgba(167,139,250,0.55)", boxShadow:"4px 4px 0px rgba(167,139,250,0.3)", backgroundColor:"rgba(167,139,250,0.1)", borderRadius:10, overflow:"hidden", transition:"all 0.3s" }}
+            onMouseEnter={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "transparent";
+              e.currentTarget.querySelector(".uv-icon").style.width = "100%";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(0)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "#fff";
+              e.currentTarget.querySelector(".uv-icon").style.width = "46px";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(calc(100% + 200px))";
+            }}
+            onMouseDown={e => { e.currentTarget.style.transform = "translate(3px,3px)"; e.currentTarget.style.boxShadow = "0px 0px rgba(167,139,250,0.3)"; }}
+            onMouseUp={e => { e.currentTarget.style.transform = "translate(0,0)"; e.currentTarget.style.boxShadow = "4px 4px 0px rgba(167,139,250,0.3)"; }}
+          >
+            <span className="uv-text" style={{ color:"#fff", fontWeight:700, fontSize:13, transition:"color 0.3s", whiteSpace:"nowrap", letterSpacing:"0.06em", zIndex:1 }}>
+              BROWSE FILES
+            </span>
+            <span className="uv-icon" style={{ position:"absolute", right:0, transform:"translateX(calc(100% + 200px))", height:"100%", width:46, backgroundColor:"rgba(167,139,250,0.22)", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.3s" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="rgb(167,139,250)">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.07)", paddingTop:12, marginTop:14 }}>
+          <span style={{ fontSize:11, color: translationFiles.length > 0 ? "rgba(167,139,250,0.8)" : "rgba(255,255,255,0.25)" }}>
+            {translationFiles.length > 0 ? `${translationFiles.length} file${translationFiles.length > 1 ? "s" : ""} ready` : "No files selected"}
+          </span>
         </div>
       </div>
 
-            {/* Column 1 – Reference File */}
+      {/* === Card 3: Reference === */}
       <div
-        className="rounded-2xl p-6 text-center cursor-pointer border border-gray-800 bg-[#111] hover:border-indigo-500 transition"
         onClick={() => document.getElementById("reference-input").click()}
-        role="button"
-        aria-label="Upload reference file"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ")
-            document.getElementById("reference-input").click();
+        className="relative flex flex-col p-6 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 ease-out hover:scale-[1.03] group-hover:[&:not(:hover)]:blur-[2px] group-hover:[&:not(:hover)]:opacity-60"
+        style={{
+          background: referenceFile ? "linear-gradient(135deg, #101018 0%, #12121e 100%)" : "linear-gradient(135deg, #141414 0%, #141418 100%)",
+          border: referenceFile ? "1px solid rgba(129,140,248,0.45)" : "1px solid rgba(129,140,248,0.18)",
+          boxShadow: referenceFile ? "0 0 28px rgba(129,140,248,0.1), inset 0 1px 0 rgba(129,140,248,0.08)" : "0 2px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        <div className="space-y-4">
-          <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mx-auto text-lg">
-            📄
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:"2px", background:"linear-gradient(90deg, transparent, rgba(129,140,248,0.7), transparent)" }} />
+
+        <div className="flex items-center justify-between mb-5">
+          <div style={{ width:44, height:44, borderRadius:12, background:"rgba(129,140,248,0.12)", border:"1px solid rgba(129,140,248,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgb(129,140,248)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
           </div>
-          <h3 className="text-lg font-semibold text-white">
-            Reference File
-          </h3>
+          <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.15em", color:"rgba(255,255,255,0.18)" }}>03</span>
+        </div>
 
-          {referenceFile ? (
-            <div className="mt-4 text-sm text-green-400">
-              <p>{referenceFile.name}</p>
-              <p>{(referenceFile.size / 1024).toFixed(1)} KB</p>
-              <p className="text-gray-400 mt-1">Click to replace</p>
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm mt-2">Upload xml / json / txt</p>
-          )}
+        <p style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Reference file</p>
+        <p style={{ fontSize:12, color:"rgba(255,255,255,0.35)", marginBottom:20, lineHeight:1.6, minHeight:36 }}>
+          {referenceFile
+            ? <span style={{ color:"rgba(129,140,248,0.85)" }}>✓ {referenceFile.name} · {(referenceFile.size/1024).toFixed(1)} KB</span>
+            : "Accepted formats: .xml · .json · .txt"
+          }
+        </p>
 
-          {errors.reference && (
-            <p id="reference-error" className="text-red-400 mt-2 text-sm">
-              {errors.reference}
-            </p>
-          )}
+        <div className="mt-auto mb-1">
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); document.getElementById("reference-input").click(); }}
+            style={{ position:"relative", width:"100%", height:46, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid rgba(129,140,248,0.55)", boxShadow:"4px 4px 0px rgba(129,140,248,0.3)", backgroundColor:"rgba(129,140,248,0.1)", borderRadius:10, overflow:"hidden", transition:"all 0.3s" }}
+            onMouseEnter={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "transparent";
+              e.currentTarget.querySelector(".uv-icon").style.width = "100%";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(0)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.querySelector(".uv-text").style.color = "#fff";
+              e.currentTarget.querySelector(".uv-icon").style.width = "46px";
+              e.currentTarget.querySelector(".uv-icon").style.transform = "translateX(calc(100% + 200px))";
+            }}
+            onMouseDown={e => { e.currentTarget.style.transform = "translate(3px,3px)"; e.currentTarget.style.boxShadow = "0px 0px rgba(129,140,248,0.3)"; }}
+            onMouseUp={e => { e.currentTarget.style.transform = "translate(0,0)"; e.currentTarget.style.boxShadow = "4px 4px 0px rgba(129,140,248,0.3)"; }}
+          >
+            <span className="uv-text" style={{ color:"#fff", fontWeight:700, fontSize:13, transition:"color 0.3s", whiteSpace:"nowrap", letterSpacing:"0.06em", zIndex:1 }}>
+              BROWSE FILE
+            </span>
+            <span className="uv-icon" style={{ position:"absolute", right:0, transform:"translateX(calc(100% + 200px))", height:"100%", width:46, backgroundColor:"rgba(129,140,248,0.22)", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.3s" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="rgb(129,140,248)">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.07)", paddingTop:12, marginTop:14 }}>
+          <span style={{ fontSize:11, color: referenceFile ? "rgba(129,140,248,0.8)" : "rgba(255,255,255,0.25)" }}>
+            {referenceFile ? "1 file ready" : "No file selected"}
+          </span>
         </div>
       </div>
 
     </div>
 
-    {/* Selected File Count */}
-    {((referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length) > 0 && (
-      <p className="text-center text-green-400 mt-6">
-        {(referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length} file(s) selected
-      </p>
-    )}
-
-    {/* Submit Button */}
-    <div className="text-center mt-6">
+    {/* Bottom actions */}
+    <div className="text-center mt-10">
+      {((referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length) > 0 && (
+        <p className="text-emerald-400 text-sm mb-4">
+          {(referenceFile ? 1 : 0) + (englishFile ? 1 : 0) + translationFiles.length} file(s) selected
+        </p>
+      )}
       <button
         type="button"
         onClick={handleUploadClick}
-        className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500"
         disabled={uploading}
+        className="px-10 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-sm tracking-wide"
       >
-        {uploading ? "Uploading..." : "Upload & Continue"}
+        {uploading ? "Uploading..." : "Upload & continue →"}
       </button>
+      {uploadVisible && <p className="text-emerald-400 text-sm mt-4">Upload successful! Redirecting...</p>}
     </div>
 
-    {uploadVisible && (
-      <p className="text-center text-green-400 mt-4">
-        Upload successful! Redirecting...
-      </p>
-    )}
   </div>
 </section>
+{/* ================= END UPLOAD SECTION ================= */}
 {/* ================= END UPLOAD SECTION ================= */}
 
 

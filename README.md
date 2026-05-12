@@ -38,7 +38,7 @@ File Handling:
 Multer
 XML / JSON Parsing
 
- Project Workflow
+ Project Workflow:
  
 User uploads:
 Reference file
